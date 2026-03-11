@@ -1,0 +1,14 @@
+fuck you
+
+#include <iostream>
+using namespace std;
+
+int main () {
+    string hello = "hello";
+
+    for (int i = 0; i < hello.size(); i++) {
+        cout << hello[i];
+    }
+
+    return 0;
+}

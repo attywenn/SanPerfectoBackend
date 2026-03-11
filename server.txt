@@ -1,0 +1,35 @@
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
+dotenv.config();
+
+
+const pool = mysql.createPool({
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER, 
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
+}).promise()
+
+async function getNote(id) {
+  const [rows] = await pool.query(`
+    SELECT *
+    FROM patients
+    WHERE patient_id = ?
+  `, [id]);
+  return rows[0];
+}
+
+async function createPatient(username, password_hash, first_name, middle_name, last_name, date_of_birth, contact_number, address) {
+  const [result] = await pool.query(`
+    INSERT INTO patients (username, password_hash, first_name, middle_name, last_name, date_of_birth, contact_number, address)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `, [username, password_hash, first_name, middle_name, last_name, date_of_birth, contact_number, address]);
+  return result;
+}
+
+
+// const result = await createPatient('Stupid_bitch', 'bitch123', 'Ferdinand', 'Romualdez', 'Marcos Jr.', '2004-11-12', '09511614532', 'Ilocos Region')
+// console.log(result);
+
+const patients = await getNote(5)
+console.log(patients)

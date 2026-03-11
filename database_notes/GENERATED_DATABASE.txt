@@ -1,0 +1,209 @@
+Recommended Database Design (Professional Approach)
+
+Tables:
+
+users
+patients
+health_workers
+admins
+diseases
+medications
+patient_diseases
+patient_medications
+medicine_inventory
+1. USERS TABLE (Authentication + Roles)
+
+This stores login info for everyone.
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('patient','health_worker','admin') NOT NULL,
+    security_question1 VARCHAR(255),
+    security_question2 VARCHAR(255),
+    security_question3 VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+Why?
+
+One login system
+
+Role determines system permissions
+
+Easier authentication
+
+2. PATIENTS TABLE
+CREATE TABLE patients (
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE,
+    surname VARCHAR(50),
+    firstname VARCHAR(50),
+    middlename VARCHAR(50),
+    date_of_birth DATE,
+    address TEXT,
+    contact_number VARCHAR(20),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+3. HEALTH WORKERS TABLE
+CREATE TABLE health_workers (
+    worker_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE,
+    surname VARCHAR(50),
+    firstname VARCHAR(50),
+    middlename VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+4. ADMINS TABLE
+CREATE TABLE admins (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE,
+    surname VARCHAR(50),
+    firstname VARCHAR(50),
+    middlename VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+5. DISEASES TABLE
+
+Instead of disease1, disease2, disease3.
+
+CREATE TABLE diseases (
+    disease_id INT AUTO_INCREMENT PRIMARY KEY,
+    disease_name VARCHAR(100) UNIQUE
+);
+
+Examples:
+
+1  Dengue
+2  Tuberculosis
+3  Hypertension
+6. PATIENT DISEASES (Many-to-Many)
+
+A patient can have multiple diseases.
+
+CREATE TABLE patient_diseases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT,
+    disease_id INT,
+    diagnosed_date DATE,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (disease_id) REFERENCES diseases(disease_id)
+);
+
+Now one patient can have unlimited diseases.
+
+7. MEDICATIONS TABLE
+CREATE TABLE medications (
+    medication_id INT AUTO_INCREMENT PRIMARY KEY,
+    medication_name VARCHAR(100)
+);
+8. PATIENT MEDICATIONS
+
+Instead of medication1..5.
+
+CREATE TABLE patient_medications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT,
+    medication_id INT,
+    dosage VARCHAR(50),
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (medication_id) REFERENCES medications(medication_id)
+);
+
+Now a patient can have any number of medications.
+
+9. MEDICINE INVENTORY (Health Worker Stock)
+CREATE TABLE medicine_inventory (
+    inventory_id INT AUTO_INCREMENT PRIMARY KEY,
+    medication_id INT,
+    quantity INT DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (medication_id) REFERENCES medications(medication_id)
+);
+10. Population Count
+
+Do NOT store it.
+
+Just query:
+
+SELECT COUNT(*) FROM patients;
+
+This always stays correct.
+
+11. Dashboard Disease Statistics (for Health Worker)
+
+To get common diseases for pie graph:
+
+SELECT 
+    d.disease_name,
+    COUNT(pd.disease_id) AS total_cases
+FROM patient_diseases pd
+JOIN diseases d
+ON pd.disease_id = d.disease_id
+GROUP BY d.disease_name
+ORDER BY total_cases DESC;
+
+Your dashboard can convert this to a pie chart.
+
+Why this design is better
+
+Your original idea:
+
+patients
+  disease1
+  disease2
+  disease3
+  medication1
+  medication2
+  medication3
+
+Problems:
+
+limited to 3 diseases
+
+limited to 5 medications
+
+database becomes messy
+
+difficult analytics
+
+Professional design:
+
+patients → patient_diseases → diseases
+patients → patient_medications → medications
+
+Unlimited, scalable, analyzable.
+
+Security improvement
+
+Never store password directly.
+
+Use bcrypt in Node.js:
+
+const bcrypt = require("bcrypt");
+
+const hashedPassword = await bcrypt.hash(password, 10);
+
+Store hashedPassword.
+
+Final Advice (from a software engineering perspective)
+
+What you're building is basically a Barangay Health Information System.
+
+If you implement:
+
+normalized database
+
+role-based access
+
+disease analytics dashboard
+
+medication inventory
+
+That is already portfolio-level software for a 2nd year CS student.
+
+If you want, I can also show you the FULL professional database schema diagram for this system.
+It will make your thesis/project 10x cleaner and easier to implement with Node.js + React.

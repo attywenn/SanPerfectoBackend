@@ -1,0 +1,86 @@
+                +----------------+
+                |     users      |
+                +----------------+
+                | user_id (PK)   |
+                | username       |
+                | password_hash  |
+                | role           |
+                | sec_q1         |
+                | sec_q2         |
+                | sec_q3         |
+                | created_at     |
+                +-------+--------+
+                        |
+      ------------------------------------------
+      |                    |                   |
+      v                    v                   v
+
++--------------+   +----------------+   +---------------+
+|   patients   |   | health_workers |   |    admins     |
++--------------+   +----------------+   +---------------+
+| patient_id PK|   | worker_id PK   |   | admin_id PK   |
+| user_id FK   |   | user_id FK     |   | user_id FK    |
+| surname      |   | surname        |   | surname       |
+| firstname    |   | firstname      |   | firstname     |
+| middlename   |   | middlename     |   | middlename    |
+| birth_date   |   +----------------+   +---------------+
+| address      |
+| contact_no   |
++------+-------+
+       |
+       | 1..many
+       v
+
++-------------------+
+| patient_diseases  |
++-------------------+
+| id PK             |
+| patient_id FK     |
+| disease_id FK     |
+| diagnosed_date    |
++---------+---------+
+          |
+          v
+     +-----------+
+     | diseases  |
+     +-----------+
+     | disease_id|
+     | name      |
+     +-----------+
+
+patients
+   |
+   | 1..many
+   v
+
++--------------------+
+| patient_medications|
++--------------------+
+| id PK              |
+| patient_id FK      |
+| medication_id FK   |
+| dosage             |
+| start_date         |
+| end_date           |
++---------+----------+
+          |
+          v
+     +-------------+
+     | medications |
+     +-------------+
+     | med_id PK   |
+     | name        |
+     +-------------+
+
+medications
+      |
+      v
+
++------------------+
+| medicine_inventory|
++------------------+
+| inventory_id PK  |
+| medication_id FK |
+| quantity         |
+| last_updated     |
++------------------+

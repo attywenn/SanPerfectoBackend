@@ -1,0 +1,99 @@
+import express from "express"
+import mysql from "mysql2/promise"
+import cors from "cors"
+
+const app = express()
+
+app.use(cors())
+app.use(express.json())
+
+let db
+
+/* 
+
+server status endpoint
+ 
+*/
+
+
+app.get("/", (req, res) => {
+  res.json({ message: "Server running" })
+})
+
+/*
+  LOGIN ENDPOINT
+*/
+
+app.post("/login", async (req, res) => {
+  try {
+
+    const { accountId, password, dob } = req.body
+
+    if (!accountId || !password || !dob) {
+      return res.json({
+        success: false,
+        message: "Account ID, password and DOB required"
+      })
+    }
+
+    const sql = "SELECT * FROM user_db WHERE user_name = ? AND dob = ?"
+    const [result] = await db.query(sql, [accountId, dob])
+
+    if (result.length === 0) {
+      return res.json({
+        success: false,
+        message: "User not found or wrong birthdate"
+      })
+    }
+
+    const user = result[0]
+    if (password !== user.pass_word) {
+      return res.json({
+        success: false,
+        message: "Wrong password"
+      })
+    }
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      user: accountId
+    })
+
+  } catch (error) {
+    console.error("Login error:", error)
+    res.json({
+      success: false,
+      message: "Server error"
+    })
+  }
+})
+
+/*
+
+SERVER STARTUP AND DATABASE CONNECTION
+
+*/
+
+async function startServer() {
+  try {
+    db = await mysql.createConnection({
+      host: "127.0.0.1",
+      user: "root",
+      password: "",
+      database: "samp_db"
+    })
+
+    console.log("Database connected")
+
+    app.listen(3000, () => {
+      console.log("Server running on port 3000")
+    })
+
+  } catch (error) {
+    console.error("Connection failed:", error)
+    process.exit(1)
+  }
+}
+
+startServer()
